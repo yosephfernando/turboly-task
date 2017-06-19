@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 Use App\User;
 Use App\tasks;
+use Yajra\Datatables\Datatables;
 class TasksController extends Controller
 {
     /**
@@ -26,15 +27,24 @@ class TasksController extends Controller
      */
     public function listTasks()
     {
-        $allTasksData = tasks::orderBy('created_at')
+      return view('tasks');
+    }
+
+    public function listTasksData()
+    {
+        $allTasksData = tasks::select(['task_id', 'task_title', 'task_desc', 'task_due_date','task_prior', 'task_status'])
                                 ->where('task_status', '!=', 'deleted')
-                                ->where('id', Auth::user()->id)
-                                ->get();
-        return view('tasks',
-          [
-            'allTasksData' => $allTasksData
-          ]
-      );
+                                ->where('id', Auth::user()->id);
+
+        return Datatables::of($allTasksData)->addColumn('action', function ($task) {
+                return '<form role="form" method="post" action="'.route('tasks-status-update').'">
+                  '.csrf_field().'
+                  <input type="hidden" name="task_id" value="'.$task->task_id.'" />
+                  <input class="btn btn-xs btn-success" type="submit" name="done" value="done" />
+                  <input class="btn btn-xs btn-danger" type="submit" name="cancel" value="cancel" />
+               </form>';
+            })
+            ->make(true);
     }
 
     public function listTasksSearch($keyword)
@@ -119,11 +129,20 @@ class TasksController extends Controller
 
     public function updateTasksStatus(Request $request){
       $idTask = $request->task_id;
-      $updated = tasks::where('task_id', $idTask)
-                ->update([
-                      'task_status' => $request->task_status,
-                      'updated_at' => \Carbon\Carbon::now(),
-                 ]);
+      if($request->task_status == "done"){
+        $updated = tasks::where('task_id', $idTask)
+                  ->update([
+                        'task_status' => 'done',
+                        'updated_at' => \Carbon\Carbon::now(),
+                   ]);
+      }else{
+        $updated = tasks::where('task_id', $idTask)
+                  ->update([
+                        'task_status' => 'deleted',
+                        'updated_at' => \Carbon\Carbon::now(),
+                   ]);
+      }
+
 
       return "success";
     }

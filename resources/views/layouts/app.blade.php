@@ -9,19 +9,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Turboly') }}</title>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap-theme.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/datepicker.css') }}" />
-    <script src="{{ asset('js/jquery.min.js') }}"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('js/bootstrap-datepicker.js') }}"></script>
-    <!-- Scripts
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <!-- js -->
+    <script src="{{ asset('js/app.js') }}"></script>
 </head>
 <body>
     <div id="app">
@@ -88,6 +79,5 @@
         {{Alert::alertDeadline()}}
         @yield('content')
     </div>
-    <!-- script src="{{ asset('js/app.js') }}"></script -->
 </body>
 </html>

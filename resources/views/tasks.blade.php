@@ -31,22 +31,7 @@
                         <div class="clear" style="height:15px"></div>
                     </div>
                     <div class="col-md-4 col-md-offset-2">
-                      <div class="input-group">
-                        <input id="keyword" type="text" class="form-control" placeholder="Search tasks" />
-                        <span class="input-group-addon" id="gosrc" style="cursor:pointer">
-                            go
-                        </span>
-                      </div>
                       <script>
-                          $("#gosrc").click(function(){
-                            var keyword = $("#keyword").val();
-                            $.get( "/tasks-search/"+keyword)
-                              .done(function( data ) {
-                                  $("#tasks").empty();
-                                  $("#tasks").html(data);
-                              });
-                          });
-
                           $("#filter").click(function(){
                             var date = $("#date").val();
                             var prior = $("#prior").val();
@@ -111,78 +96,42 @@
                           <h4>{{ session('status') }}</h4>
                       @endif
                       <div id="tasks" class="col-md-12 row">
-                            @foreach($allTasksData as $task)
-                             <div class="col-md-3">
-                                @if($task->task_prior == 'high' && $task->task_status != 'done')
-                                  <div class="panel panel-danger">
-                                @elseif($task->task_prior == 'medium' && $task->task_status != 'done')
-                                  <div class="panel panel-warning">
-                                @elseif($task->task_prior == 'low' && $task->task_status != 'done')
-                                  <div class="panel panel-default">
-                                @elseif($task->task_status == 'done')
-                                  <div class="panel panel-success">
-                                @endif
-
-                                      <div class="panel-heading">{{$task->task_title}}
-                                        <div class="btn-group pull-right">
-                                         @if($task->task_status == 'done')
-                                            <button id="x{{$task->task_id}}" class="btn btn-danger btn-xs">X</button>
-                                         @else
-                                            <button id="x{{$task->task_id}}" class="btn btn-danger btn-xs">X</button>
-                                            <button id="v{{$task->task_id}}" class="btn btn-success btn-xs">V</button>
-                                         @endif
-
-                                        </div>
-                                      </div>
-                                      <div class="panel-body">
-                                        <p>{{$task->task_desc}}</p>
-
-                                        <p>
-                                           @if($task->task_status != 'done')
-                                           <em>due date : {{date('d M Y', strtotime($task->task_due_date))}}</em><br />
-                                           <em>priority : {{$task->task_prior}}</em>
-                                           @else
-                                            <em>done date : {{date('d M Y', strtotime($task->updated_at))}}</em><br />
-                                            <em>priority : {{$task->task_prior}}</em>
-                                           @endif
-                                        </p>
-                                      </div>
-                                  </div>
-                             </div>
-                             <script>
-                                $("#x{{$task->task_id}}").click(function(){
-                                  $.post( "/tasks-update-status",  {'task_id' : {{$task->task_id}}, 'task_status': 'deleted', '_token' : '{{csrf_token()}}' })
-                                       .done(function( data ) {
-                                         if(data == "success"){
-                                            location.reload();
-                                         }else{
-                                            alert(data);
-                                         }
-                                         console.log( "Data Loaded: " + data );
-                                       });
-                                });
-
-                                $("#v{{$task->task_id}}").click(function(){
-                                  $.post( "/tasks-update-status",  {'task_id' : {{$task->task_id}}, 'task_status': 'done', '_token' : '{{csrf_token()}}' })
-                                       .done(function( data ) {
-                                         if(data == "success"){
-                                            location.reload();
-                                         }else{
-                                            alert(data);
-                                         }
-                                         console.log( "Data Loaded: " + data );
-                                       });
-                                });
-                             </script>
-                            @endforeach
+                          <table class="table table-striped table-bordered table-hover" id="task-table">
+                            <tr>
+                             <thead>
+                               <th>#</th>
+                               <th>Title</th>
+                               <th>Description</th>
+                               <th>Due date</th>
+                               <th>Priority</th>
+                               <th>Status</th>
+                               <th>Action</th>
+                             </thead>
+                           </tr>
+                          </table>
                       </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 <script>
+    $(function() {
+        var table = $("#task-table").DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{route('tasks-data')}}',
+
+            columns: [
+              { data: 'task_id' },
+              {data: 'task_title', name: 'task_title'},
+              { data: 'task_desc', name: 'task_desc' },
+              { data: 'task_due_date', name: 'task_due_date' },
+              { data: 'task_prior', name: 'task_prior' },
+              { data: 'task_status', name: 'task_status' },
+              {data: 'action', name: 'action', orderable: false, searchable: false}
+             ]
+        });
+    });
+
     $('.dp').datepicker({
       format: 'yyyy-mm-dd',
       todayHighlight: true,
