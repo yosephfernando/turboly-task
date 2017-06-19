@@ -1,4 +1,4 @@
 # turboly-task
-This is the app for the coding chalange at turboly.
+<h3> this app for the coding chalange at turboly.</h3>
 
-Note : The datatables libs is not compatible with php artisan serve environment, so please use wamp/xampp to avoid this issue
+Note : The datatables libs <b>is not compatible</b> with <b>php artisan serve environment</b>, so please use wamp/xampp to avoid this issue
