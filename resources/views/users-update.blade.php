@@ -12,9 +12,9 @@
                       @if(session('status'))
                           <h4>{{ session('status') }}</h4>
                       @endif
-                      <form class="form-group" method="post" action="{{route('users-update-action')}}">
+                      <form class="form-group" method="post" action="/users-manage/{{$userUpdateData->id}}">
                           {{csrf_field()}}
-                          <input type="hidden" name="id" value="{{$userUpdateData->id}}" />
+                          {{ method_field('PUT') }}
                           <div class="col-md-6">
                              <label>Name</label>
                              <input type="text" name="name" class="form-control" value="{{$userUpdateData->name}}" />
@@ -34,7 +34,7 @@
                           <div class="col-md-12">
                              <div class="clear" style="height:10px"></div>
                              <input type="submit" class="btn btn-success" value="update"/>
-                             <a href="{{route('users')}}"><input type="button" class="btn btn-danger" value="cancel"/></a>
+                             <a href="/users-manage"><input type="button" class="btn btn-danger" value="cancel"/></a>
                           </div>
                       </form>
                     </div>

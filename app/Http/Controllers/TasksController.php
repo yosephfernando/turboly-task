@@ -25,75 +25,65 @@ class TasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function listTasks()
+    public function index()
     {
       return view('tasks');
     }
 
-    public function listTasksData()
+    public function listTasksData(Request $request)
     {
         $allTasksData = tasks::select(['task_id', 'task_title', 'task_desc', 'task_due_date','task_prior', 'task_status'])
                                 ->where('task_status', '!=', 'deleted')
                                 ->where('id', Auth::user()->id);
 
-        return Datatables::of($allTasksData)->addColumn('action', function ($task) {
-                return '<form role="form" method="post" action="'.route('tasks-status-update').'">
+        if ($request->has('prior') && $request->get('prior') != "null") {
+            $allTasksData->where('task_prior', $request->get('prior'));
+        }
+
+        if ($request->has('date') && $request->get('date') != "") {
+            $allTasksData->where('task_due_date', $request->get('date'));
+        }
+        return Datatables::of($allTasksData)
+             ->addColumn('action', function ($task) {
+                return '<form role="form" method="post" action="/tasks/'.$task->task_id.'">
                   '.csrf_field().'
+                  '.method_field("PUT").'
                   <input type="hidden" name="task_id" value="'.$task->task_id.'" />
                   <input class="btn btn-xs btn-success" type="submit" name="done" value="done" />
                   <input class="btn btn-xs btn-danger" type="submit" name="cancel" value="cancel" />
-               </form>';
+               </form>
+               <a href="#'.$task->task_id.'" data-target="#taskDelete'.$task->task_id.'" data-toggle="modal"  class="btn btn-xs btn-danger">Delete</a>
+
+               <!--Modal delete-->
+                 <div id="taskDelete'.$task->task_id.'" tabindex="-1" role="dialog" aria-labelledby="modal-responsive-label" aria-hidden="true" class="modal fade">
+                     <div class="modal-dialog">
+                       <form role="form" method="POST" action="/tasks/'.$task->task_id.'">
+                         '.csrf_field().'
+                         '.method_field("DELETE").'
+                         <div class="modal-content">
+                             <div class="modal-header">
+                                 <button type="button" data-dismiss="modal" aria-hidden="true" class="close">&times;</button>
+                                 <h4 id="modal-responsive-label" class="modal-title">Delete task '.$task->task_title.'</h4></div>
+                             <div class="modal-body">
+                                 <div class="row">
+                                       <h3 style="text-align:center">Are you sure want to delete this task ?</h3>
+                                 </div>
+                             </div>
+                             <div class="modal-footer">
+                                 <button type="button" data-dismiss="modal" class="btn btn-danger">No</button>
+                                 <button type="submit" class="btn btn-success">Yes</button>
+                             </div>
+                         </div>
+                       </form>
+                     </div>
+                 </div>
+
+               ';
             })
             ->make(true);
     }
 
-    public function listTasksSearch($keyword)
-    {
-
-        $searcResultTasksData = tasks::orderBy('created_at')
-                             ->where('task_title', 'like', '%'.$keyword.'%')
-                             ->orWhere('task_desc', 'like', '%'.$keyword.'%')
-                             ->where('task_status', '!=', 'deleted')
-                             ->where('id', Auth::user()->id)
-                             ->get();
-
-         return view('task-filter-result',
-           [
-             'filterResultTasksData' => $searcResultTasksData,
-           ]
-       );
-    }
-
-    public function listTasksFilter($date, $prior)
-    {
-      if($date != "" && $prior == "null" ){
-        $filterResultTasksData = tasks::orderBy('created_at')
-                             ->where('task_due_date', $date)
-                             ->where('task_status', '!=', 'deleted')
-                             ->where('id', Auth::user()->id)
-                             ->get();
-      }else if($date == "null" && $prior != ""){
-        $filterResultTasksData = tasks::orderBy('created_at')
-                             ->where('task_prior', $prior)
-                             ->where('id', Auth::user()->id)
-                             ->get();
-      }else if($date != "" && $prior != "" ){
-        $filterResultTasksData = tasks::orderBy('created_at')
-                             ->where('task_due_date', $date)
-                             ->where('task_prior', $prior)
-                             ->where('task_status', '!=', 'deleted')
-                             ->where('id', Auth::user()->id)
-                             ->get();
-      }
-
-        return view('task-filter-result',
-          [
-            'filterResultTasksData' => $filterResultTasksData,
-          ]
-      );
-    }
-
-    public function addTasksAction(Request $request){
+    public function store(Request $request){
       $add = new tasks();
       $add->id = Auth::user()->id;
       $add->task_title = $request->task_title;
@@ -106,7 +96,7 @@ class TasksController extends Controller
       return Redirect::back()->with('status', 'Task added');
     }
 
-    public function updateTasks(Request $request, $idTasks){
+    public function show($idTasks){
           $tasksUpdateData = User::tasks('task_id', $idTasks)->first();
          return view('tasks-update',
            [
@@ -116,20 +106,8 @@ class TasksController extends Controller
        );
     }
 
-    public function updateTasksDesc(Request $request){
-      $idTask = $request->task_id;
-      $updated = tasks::where('task_id', $idTask)
-                ->update([
-                      'task_desc' => $request->task_desc,
-                      'updated_at' => \Carbon\Carbon::now(),
-                 ]);
-
-      return "success";
-    }
-
-    public function updateTasksStatus(Request $request){
-      $idTask = $request->task_id;
-      if($request->task_status == "done"){
+    public function update(Request $request, $idTask){
+      if($request->has('done') && $request->done != ""){
         $updated = tasks::where('task_id', $idTask)
                   ->update([
                         'task_status' => 'done',
@@ -138,17 +116,15 @@ class TasksController extends Controller
       }else{
         $updated = tasks::where('task_id', $idTask)
                   ->update([
-                        'task_status' => 'deleted',
+                        'task_status' => 'pending',
                         'updated_at' => \Carbon\Carbon::now(),
                    ]);
       }
 
-
-      return "success";
+      return Redirect::back()->with('status', 'Task updated');
     }
 
-    public function deleteTasks(Request $request){
-      $idTask = $request->task_id;
+    public function destroy($idTask){
       $deleted = tasks::where('task_id', $idTask)
                        ->delete();
 

@@ -48,9 +48,9 @@
                             <li><a href="{{ route('register') }}">Register</a></li>
                         @else
                          @if (Auth::user()->role == 'admin')
-                            <li><a href="{{ route('users') }}">Users</a></li>
+                            <li><a href="/users-manage">Users</a></li>
                         @elseif(Auth::user()->role = 'User')
-                            <li><a href="{{ route('tasks') }}">My Task(s)</a></li>
+                            <li><a href="/tasks">My Task(s)</a></li>
                         @endif
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">

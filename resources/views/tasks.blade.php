@@ -13,12 +13,13 @@
                 </div>
 
                 <div class="panel-body">
+                  <form class="form-group" role="form" id="filter">
                     <div class="col-md-3">
-                        <input type="text" class="form-control dp" placeholder="date" id="date"  />
+                        <input type="text" class="form-control dp" placeholder="date" name="date"  />
                         <div class="clear" style="height:15px"></div>
                     </div>
                     <div class="col-md-2">
-                        <select id="prior" class="form-control">
+                        <select id="prior" name="prior" class="form-control">
                             <option value="null">--all --</option>
                             <option value="high">HIGH</option>
                             <option value="medium">MEDIUM</option>
@@ -27,24 +28,11 @@
                         <div class="clear" style="height:15px"></div>
                     </div>
                     <div class="col-md-1">
-                        <input id="filter" type="button" class="btn btn-warning" value="filter"/>
+                        <input type="button" class="btn btn-warning" value="filter"/>
                         <div class="clear" style="height:15px"></div>
                     </div>
-                    <div class="col-md-4 col-md-offset-2">
-                      <script>
-                          $("#filter").click(function(){
-                            var date = $("#date").val();
-                            var prior = $("#prior").val();
-                            if(date == ""){date = "null"}
-                            $.get( "/tasks-filter/"+date+"/"+prior)
-                              .done(function( data ) {
-                                  $("#tasks").empty();
-                                  $("#tasks").html(data);
-                              });
-                          });
-                      </script>
-                      <div class="clear" style="height:10px"></div>
-                    </div>
+                </form>
+
                     <div class="col-md-12">
                       <div class="col-md-6 row">
                           <input type="button" class="btn btn-success" value="new task" data-target="#addTask" data-toggle="modal" />
@@ -54,8 +42,9 @@
                       <!--Modal add-->
                       <div id="addTask" tabindex="-1" role="dialog" aria-labelledby="modal-responsive-label" aria-hidden="true" class="modal fade">
                           <div class="modal-dialog">
-                            <form role="form" method="post" action="{{ route('tasks-add') }}">
+                            <form role="form" method="POST" action="/tasks">
                               {{csrf_field()}}
+                              {{method_field('POST')}}
                               <div class="modal-content">
                                   <div class="modal-header">
                                       <button type="button" data-dismiss="modal" aria-hidden="true" class="close">&times;</button>
@@ -118,7 +107,13 @@
         var table = $("#task-table").DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{route('tasks-data')}}',
+            ajax: {
+              url: '{{route('tasks-data')}}',
+              data: function (d) {
+                  d.date = $('input[name=date]').val();
+                  d.prior = $('select[name=prior]').val();
+              },
+            },
 
             columns: [
               { data: 'task_id' },
@@ -129,6 +124,10 @@
               { data: 'task_status', name: 'task_status' },
               {data: 'action', name: 'action', orderable: false, searchable: false}
              ]
+        });
+
+        $('#filter').on('click', function(e) {
+            table.draw();
         });
     });
 

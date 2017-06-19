@@ -25,7 +25,7 @@ class UsersController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function listUsers()
+     public function index()
      {
            return view('users');
      }
@@ -34,15 +34,15 @@ class UsersController extends Controller
     {
       return Datatables::of(User::query())->addColumn('action', function ($user) {
                 return '
-                <a href="/users-update/'.$user->id.'" class="btn btn-xs btn-warning">Edit</a>
+                <a href="/users-manage/'.$user->id.'" class="btn btn-xs btn-warning">Edit</a>
                 <a href="#'.$user->id.'" data-target="#userDelete'.$user->id.'" data-toggle="modal"  class="btn btn-xs btn-danger">Delete</a>
 
                 <!--Modal delete-->
                   <div id="userDelete'.$user->id.'" tabindex="-1" role="dialog" aria-labelledby="modal-responsive-label" aria-hidden="true" class="modal fade">
                       <div class="modal-dialog">
-                        <form role="form" method="post" action="'.route("users-delete").'">
+                        <form role="form" method="POST" action="/users-manage/'.$user->id.'">
                           '.csrf_field().'
-                          <input type="hidden" name="id" value="'.$user->id.'">
+                          '.method_field("DELETE").'
                           <div class="modal-content">
                               <div class="modal-header">
                                   <button type="button" data-dismiss="modal" aria-hidden="true" class="close">&times;</button>
@@ -66,22 +66,7 @@ class UsersController extends Controller
             ->make(true);
     }
 
-    public function listUsersSearch($keyword)
-    {
-        $searchResultUserData = User::orderBy('created_at')
-                             ->where('name', 'LIKE' ,'%'.$keyword.'%')
-                             ->orWhere('email','LIKE', '%'.$keyword.'%')
-                             ->get();
-
-        return view('users-search-result',
-          [
-            'searchResultUserData' => $searchResultUserData,
-            'keyword' => $keyword
-          ]
-      );
-    }
-
-    public function updateUser(Request $request, $idUser){
+    public function show($idUser){
           $userUpdateData = User::where('id', $idUser)->first();
          return view('users-update',
            [
@@ -91,8 +76,7 @@ class UsersController extends Controller
        );
     }
 
-    public function updateUserAction(Request $request){
-      $idUser = $request->id;
+    public function update(Request $request, $idUser){
       $updated = User::where('id', $idUser)
                 ->update([
                       'name' => $request->name,
@@ -104,8 +88,7 @@ class UsersController extends Controller
       return Redirect::back()->with('status', 'User updated');
     }
 
-    public function deleteUser(Request $request){
-      $idUser = $request->id;
+    public function destroy($idUser){
       $deleted = User::where('id', $idUser)
                        ->delete();
 
