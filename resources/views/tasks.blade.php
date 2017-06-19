@@ -35,7 +35,7 @@
 
                     <div class="col-md-12">
                       <div class="col-md-6 row">
-                          <input type="button" class="btn btn-success" value="new task" data-target="#addTask" data-toggle="modal" />
+                          <button class="btn btn-success" data-target="#addTask" data-toggle="modal">new task</button>
                           <div class="clear" style="height:15px"></div>
                       </div>
 
@@ -82,7 +82,7 @@
                           </div>
                       </div>
                       @if(session('status'))
-                          <h4>{{ session('status') }}</h4>
+                          <h4 id="status">{{ session('status') }}</h4>
                       @endif
                       <div id="tasks" class="col-md-12 row">
                           <table class="table table-striped table-bordered table-hover" id="task-table">
