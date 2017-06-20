@@ -23,15 +23,15 @@ class loginTest extends DuskTestCase
                     ->assertPathIs('/tasks');
         });
     }
-	
+
 	public function testAddTask()
     {
         $this->browse(function (Browser $browser) {
              $browser->visit('/tasks')
                     ->press('new task')
-					->type('task_title', 'title 1')	
-					->type('task_desc', 'desc 1')	
-					->select('task_prioroty', 'medium')
+					->type('task_title', 'title 1')
+					->type('task_desc', 'desc 1')
+					->select('task_priority', 'medium')
 					->type('task_due_date', '2017-06-19')
 					->press('add')
 					->assertSee('Task added');
