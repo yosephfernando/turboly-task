@@ -61,7 +61,7 @@
                                                 </div>
                                                 <div class="col-md-12">
                                                     <label>Priority</label>
-                                                    <select name="task_prioroty" class="form-control" required>
+                                                    <select name="task_priority" class="form-control" required>
                                                         <option value="high">HIGH</option>
                                                         <option value="medium">MEDIUM</option>
                                                         <option value="low">LOW</option>

@@ -88,7 +88,7 @@ class TasksController extends Controller
       $add->id = Auth::user()->id;
       $add->task_title = $request->task_title;
       $add->task_desc = $request->task_desc;
-      $add->task_prior = $request->task_prioroty;
+      $add->task_prior = $request->task_priority;
       $add->task_due_date = $request->task_due_date;
       $add->task_status = "ongoing";
       $add->save();
